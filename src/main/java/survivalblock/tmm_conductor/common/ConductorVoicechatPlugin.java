@@ -103,7 +103,7 @@ public class ConductorVoicechatPlugin implements VoicechatPlugin {
     }
 
     public static void reset() {
-        announcementChannel.clearTargets();
+        if (announcementChannel != null) announcementChannel.clearTargets();
         receivers.clear();
     }
 
