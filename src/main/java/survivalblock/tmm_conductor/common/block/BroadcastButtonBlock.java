@@ -44,6 +44,7 @@ public class BroadcastButtonBlock extends ElevatorButtonBlock implements BlockEn
                     ConductorVoicechatPlugin.reset();
                     broadcast.setAnnouncerUuid(null);
                 }
+                world.scheduleBlockTick(pos, this, 1);
             }
             return ActionResult.success(client);
         }
