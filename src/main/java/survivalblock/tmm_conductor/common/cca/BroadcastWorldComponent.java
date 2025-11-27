@@ -17,7 +17,7 @@ public class BroadcastWorldComponent implements ServerTickingComponent, AutoSync
 
     public static final ComponentKey<BroadcastWorldComponent> KEY = ComponentRegistry.getOrCreate(TMMConductor.id("broadcast"), BroadcastWorldComponent.class);
 
-    public static final int COOLDOWN_MULTIPLIER = 10;
+    public static final int COOLDOWN_MULTIPLIER = 5;
     public static final int MAX_ANNOUNCEMENT_TICKS = 45 * 20;
 
     protected boolean broadcasting = false;
@@ -26,6 +26,8 @@ public class BroadcastWorldComponent implements ServerTickingComponent, AutoSync
     protected UUID announcerUuid = null;
 
     protected final World world;
+
+    protected boolean dirty = false;
 
     public BroadcastWorldComponent(World world) {
         this.world = world;
@@ -37,6 +39,7 @@ public class BroadcastWorldComponent implements ServerTickingComponent, AutoSync
             // decrement countdown if broadcasting, when countdown = 0, stop
             if (announcementTicks > 0) {
                 announcementTicks--;
+                this.markDirty();
             } else {
                 this.setBroadcasting(false);
             }
@@ -44,11 +47,24 @@ public class BroadcastWorldComponent implements ServerTickingComponent, AutoSync
             // if not broadcasting, decrement cooldown
             if (this.cooldown > 0) {
                 this.cooldown--;
+                this.markDirty();
             } else {
                 this.cooldown = 0;
                 this.announcementTicks = MAX_ANNOUNCEMENT_TICKS;
             }
         }
+
+        if (this.world.getTime() % 200 == 0) {
+            this.markDirty();
+        }
+
+        if (this.dirty) {
+            KEY.sync(this.world);
+        }
+    }
+
+    public void markDirty() {
+        this.dirty = true;
     }
 
     public int getRenderColor() {
@@ -81,6 +97,15 @@ public class BroadcastWorldComponent implements ServerTickingComponent, AutoSync
         }
 
         this.broadcasting = broadcasting;
+        this.markDirty();
+    }
+
+    public void reset() {
+        this.broadcasting = false;
+        this.announcementTicks = MAX_ANNOUNCEMENT_TICKS;
+        this.cooldown = 0;
+        this.announcerUuid = null;
+        this.markDirty();
     }
 
     public static int getCooldownMultiplier(World world) {

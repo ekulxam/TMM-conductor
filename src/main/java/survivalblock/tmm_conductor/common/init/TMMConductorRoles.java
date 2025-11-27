@@ -34,6 +34,8 @@ public class TMMConductorRoles {
 
     public static class BroadcastTask implements PlayerMoodComponent.TrainTask {
 
+        public static final String NAME = "broadcast";
+
         public static PlayerMoodComponent.Task taskType = null;
 
         @Override
@@ -44,7 +46,7 @@ public class TMMConductorRoles {
 
         @Override
         public String getName() {
-            return "broadcast";
+            return NAME;
         }
 
         @Override
@@ -55,7 +57,7 @@ public class TMMConductorRoles {
         @Override
         public NbtCompound toNbt() {
             NbtCompound nbt = new NbtCompound();
-            nbt.putString("type", "broadcast");
+            nbt.putString("type", NAME);
             return nbt;
         }
     }

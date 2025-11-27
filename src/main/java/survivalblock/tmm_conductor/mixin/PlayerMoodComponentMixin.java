@@ -11,6 +11,7 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.registry.RegistryWrapper;
+import org.spongepowered.asm.mixin.Debug;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -43,19 +44,21 @@ public class PlayerMoodComponentMixin {
     private PlayerEntity player;
 
     @WrapOperation(method = "readFromNbt", at = @At(value = "INVOKE", target = "Lnet/minecraft/nbt/NbtCompound;contains(Ljava/lang/String;)Z"), remap = true)
-    private boolean encodeProperly(NbtCompound instance, String key, Operation<Boolean> original) {
+    private boolean decodeProperly(NbtCompound instance, String key, Operation<Boolean> original) {
         if (instance.contains(key, NbtElement.STRING_TYPE)) {
             String maybe = instance.getString(key);
-            if (maybe.equals("conductor")) {
+            if (maybe.equals(TMMConductorRoles.BroadcastTask.NAME)) {
                 PlayerMoodComponent.Task typeEnum = TMMConductorRoles.BroadcastTask.taskType;
-                this.tasks.put(typeEnum, typeEnum.setFunction.apply(instance));
+                if (typeEnum != null) {
+                    this.tasks.put(typeEnum, typeEnum.setFunction.apply(instance));
+                }
             }
             return false;
         }
         return original.call(instance, key);
     }
 
-    @Inject(method = "generateTask", at = @At(value = "INVOKE", target = "Ldev/doctor4t/trainmurdermystery/cca/PlayerMoodComponent$Task;values()[Ldev/doctor4t/trainmurdermystery/cca/PlayerMoodComponent$Task;"), cancellable = true)
+    @Inject(method = "generateTask", at = @At(value = "INVOKE", target = "Ldev/doctor4t/trainmurdermystery/cca/PlayerMoodComponent$Task;values()[Ldev/doctor4t/trainmurdermystery/cca/PlayerMoodComponent$Task;", shift = At.Shift.BEFORE), cancellable = true)
     private void returnAnnouncementEarly(CallbackInfoReturnable<PlayerMoodComponent.TrainTask> cir) {
         if (GameWorldComponent.KEY.get(this.player.getWorld()).isRole(this.player, TMMConductorRoles.CONDUCTOR) && !this.tmm_conductor$hasDoneAnnouncement) {
             this.tmm_conductor$hasDoneAnnouncement = true;
@@ -88,7 +91,7 @@ public class PlayerMoodComponentMixin {
         this.tmm_conductor$hasDoneAnnouncement = false;
     }
 
-    @Mixin(value = PlayerMoodComponent.Task.class, priority = 50000)
+    @Mixin(value = PlayerMoodComponent.Task.class, priority = 5000)
     public static class TaskMixin {
 
         @Shadow

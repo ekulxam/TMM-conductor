@@ -5,6 +5,8 @@ import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
+import net.minecraft.block.entity.BlockEntityTicker;
+import net.minecraft.block.entity.BlockEntityType;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
@@ -15,6 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import survivalblock.tmm_conductor.common.ConductorVoicechatPlugin;
 import survivalblock.tmm_conductor.common.block.entity.BroadcastButtonBlockEntity;
 import survivalblock.tmm_conductor.common.cca.BroadcastWorldComponent;
+import survivalblock.tmm_conductor.common.init.TMMConductorBlockEntities;
 import survivalblock.tmm_conductor.common.init.TMMConductorRoles;
 
 public class BroadcastButtonBlock extends ElevatorButtonBlock implements BlockEntityProvider {
@@ -42,7 +45,6 @@ public class BroadcastButtonBlock extends ElevatorButtonBlock implements BlockEn
                     broadcast.setAnnouncerUuid(null);
                 }
             }
-            world.scheduleBlockTick(pos, this, 1);
             return ActionResult.success(client);
         }
 
@@ -60,5 +62,17 @@ public class BroadcastButtonBlock extends ElevatorButtonBlock implements BlockEn
         this.powerOn(state, world, pos, player);
 
         return ActionResult.success(client);
+    }
+
+    @Override
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
+        if (type != TMMConductorBlockEntities.BROADCAST_BUTTON || world.isClient()) {
+            return null;
+        }
+        return ((world1, pos, state1, blockEntity) -> {
+            if (BroadcastWorldComponent.KEY.get(world1).isOnCooldown() && state1.get(POWERED)) {
+                world1.scheduleBlockTick(pos, this, 1);
+            }
+        });
     }
 }

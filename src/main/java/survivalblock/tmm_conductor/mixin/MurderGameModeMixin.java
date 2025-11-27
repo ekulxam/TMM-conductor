@@ -7,6 +7,7 @@ import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.client.gui.RoleAnnouncementTexts;
 import dev.doctor4t.trainmurdermystery.game.MurderGameMode;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Util;
@@ -14,7 +15,9 @@ import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import survivalblock.tmm_conductor.common.TMMConductor;
 import survivalblock.tmm_conductor.common.init.TMMConductorRoles;
 
 import java.util.ArrayList;
@@ -26,7 +29,15 @@ public class MurderGameModeMixin {
 
     @Inject(method = "assignRolesAndGetKillerCount", at = @At("RETURN"), remap = true)
     private static void assignOneConductor(@NotNull ServerWorld world, @NotNull List<ServerPlayerEntity> players, GameWorldComponent gameComponent, CallbackInfoReturnable<Integer> cir) {
+        if (TMMConductor.DEVELOPMENT) {
+            players.forEach(player -> gameComponent.addRole(player, TMMConductorRoles.CONDUCTOR));
+            return;
+        }
+
         List<UUID> civilians = gameComponent.getAllWithRole(TMMRoles.CIVILIAN);
+        if (civilians.isEmpty()) {
+            return;
+        }
         gameComponent.addRole(Util.getRandom(civilians, world.getRandom()), TMMConductorRoles.CONDUCTOR);
     }
 
@@ -36,5 +47,12 @@ public class MurderGameModeMixin {
             return original.call(instance, TMMConductorRoles.CONDUCTOR_TEXT);
         }
         return original.call(instance, o);
+    }
+
+    @Inject(method = "tickServerGameLoop", at = @At("HEAD"), cancellable = true, remap = true)
+    private void endlessDev(CallbackInfo ci) {
+        if (TMMConductor.DEVELOPMENT) {
+            ci.cancel();
+        }
     }
 }

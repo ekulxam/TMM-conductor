@@ -22,7 +22,7 @@ public class TMMConductorEnUsLangGenerator extends FabricLanguageProvider {
         translationBuilder.add("announcement.goal.conductor", "Stay safe and survive till the end of the ride.");
         translationBuilder.add("announcement.goals.conductor", "Stay safe and survive till the end of the ride.");
         translationBuilder.add("announcement.win.conductor", "Passengers Win!");
-        translationBuilder.add("task.broadcast", "giving an announcement via broadcast button.");
+        translationBuilder.add("task.broadcast", "broadcasting.");
 
         TMMConductorBlocks.registrar.generateLang(wrapperLookup, translationBuilder);
     }
