@@ -11,6 +11,7 @@ import dev.doctor4t.trainmurdermystery.compat.TrainVoicePlugin;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
+import net.minecraft.world.World;
 import survivalblock.tmm_conductor.common.cca.BroadcastWorldComponent;
 import survivalblock.tmm_conductor.common.init.TMMConductorRoles;
 
@@ -71,9 +72,10 @@ public class ConductorVoicechatPlugin implements VoicechatPlugin {
             return;
         }
 
-        GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(serverPlayer.getWorld());
+        World world = serverPlayer.getEntityWorld();
+        GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(world);
         if (gameWorldComponent.isRunning()) {
-            if (!gameWorldComponent.isRole(serverPlayer, TMMConductorRoles.CONDUCTOR)) {
+            if (!BroadcastWorldComponent.KEY.get(world).isBroadcasting() || !gameWorldComponent.isRole(serverPlayer, TMMConductorRoles.CONDUCTOR)) {
                 return;
             }
         } else if (!serverPlayer.getUuid().equals(announcerUUID)) {

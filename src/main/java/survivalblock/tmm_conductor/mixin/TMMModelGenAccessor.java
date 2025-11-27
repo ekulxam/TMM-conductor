@@ -1,0 +1,14 @@
+package survivalblock.tmm_conductor.mixin;
+
+import dev.doctor4t.trainmurdermystery.datagen.TMMModelGen;
+import net.minecraft.block.Block;
+import net.minecraft.data.client.BlockStateModelGenerator;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.gen.Invoker;
+
+@Mixin(TMMModelGen.class)
+public interface TMMModelGenAccessor {
+
+    @Invoker("registerButton")
+    void tmm_conductor$invokeRegisterButton(BlockStateModelGenerator generator, Block block);
+}

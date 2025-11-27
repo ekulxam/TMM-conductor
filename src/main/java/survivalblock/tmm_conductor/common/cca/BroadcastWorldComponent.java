@@ -1,26 +1,27 @@
 package survivalblock.tmm_conductor.common.cca;
 
-import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.util.Colors;
 import net.minecraft.world.World;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
+import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
 import survivalblock.tmm_conductor.common.TMMConductor;
 
 import java.util.UUID;
 
-public class BroadcastWorldComponent implements ServerTickingComponent {
+public class BroadcastWorldComponent implements ServerTickingComponent, AutoSyncedComponent {
 
     public static final ComponentKey<BroadcastWorldComponent> KEY = ComponentRegistry.getOrCreate(TMMConductor.id("broadcast"), BroadcastWorldComponent.class);
 
     public static final int COOLDOWN_MULTIPLIER = 10;
     public static final int MAX_ANNOUNCEMENT_TICKS = 45 * 20;
 
-    protected boolean broadcasting = true;
-    protected int countdown = MAX_ANNOUNCEMENT_TICKS;
+    protected boolean broadcasting = false;
+    protected int announcementTicks = MAX_ANNOUNCEMENT_TICKS;
     protected int cooldown = 0;
     protected UUID announcerUuid = null;
 
@@ -34,24 +35,38 @@ public class BroadcastWorldComponent implements ServerTickingComponent {
     public void serverTick() {
         if (broadcasting) {
             // decrement countdown if broadcasting, when countdown = 0, stop
-            if (countdown > 0) {
-                countdown--;
+            if (announcementTicks > 0) {
+                announcementTicks--;
             } else {
                 this.setBroadcasting(false);
-                countdown = 0;
             }
         } else {
             // if not broadcasting, decrement cooldown
-            if (cooldown > 0) {
-                countdown--;
+            if (this.cooldown > 0) {
+                this.cooldown--;
             } else {
-                cooldown = 0;
+                this.cooldown = 0;
+                this.announcementTicks = MAX_ANNOUNCEMENT_TICKS;
             }
         }
     }
 
+    public int getRenderColor() {
+        if (this.isOnCooldown()) {
+            return Colors.RED;
+        }
+        if (this.broadcasting) {
+            return Colors.GREEN;
+        }
+        return Colors.WHITE;
+    }
+
     public boolean isOnCooldown() {
         return this.cooldown > 0;
+    }
+
+    public int getTicksForRendering() {
+        return this.isOnCooldown() ? this.cooldown : this.announcementTicks;
     }
 
     public void setBroadcasting(boolean broadcasting) {
@@ -61,21 +76,15 @@ public class BroadcastWorldComponent implements ServerTickingComponent {
             }
             cooldown = 0;
         } else {
-            cooldown = (MAX_ANNOUNCEMENT_TICKS - countdown) * COOLDOWN_MULTIPLIER;
-            countdown = 0;
+            cooldown = (MAX_ANNOUNCEMENT_TICKS - announcementTicks) * getCooldownMultiplier(this.world);
+            announcementTicks = 0;
         }
 
         this.broadcasting = broadcasting;
     }
 
-    @Override
-    public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
-
-    }
-
-    @Override
-    public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
-
+    public static int getCooldownMultiplier(World world) {
+        return GameWorldComponent.KEY.get(world).isRunning() ? COOLDOWN_MULTIPLIER : 0;
     }
 
     public void setAnnouncerUuid(UUID uuid) {
@@ -84,5 +93,27 @@ public class BroadcastWorldComponent implements ServerTickingComponent {
 
     public UUID getAnnouncerUuid() {
         return this.announcerUuid;
+    }
+
+    public boolean isBroadcasting() {
+        return this.broadcasting;
+    }
+
+    @Override
+    public void readFromNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
+        this.broadcasting = tag.contains("broadcasting") && tag.getBoolean("broadcasting");
+        this.announcementTicks = tag.contains("announcementTicks") ? tag.getInt("announcementTicks") : 0;
+        this.cooldown = tag.contains("cooldown") ? tag.getInt("cooldown") : 0;
+        this.announcerUuid = tag.containsUuid("announcerUuid") ? tag.getUuid("announcerUuid") : null;
+    }
+
+    @Override
+    public void writeToNbt(NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
+        tag.putBoolean("broadcasting", this.broadcasting);
+        tag.putInt("announcementTicks", this.announcementTicks);
+        tag.putInt("cooldown", this.cooldown);
+        if (this.announcerUuid != null) {
+            tag.putUuid("announcerUuid", this.announcerUuid);
+        }
     }
 }

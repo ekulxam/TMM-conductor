@@ -4,13 +4,16 @@
   "compatibilityLevel": "JAVA_21",
   "mixins": [
     "ButtonBlockMixin",
-    "ExampleMixin",
-    "GameFunctionsMixin"
+    "GameFunctionsMixin",
+    "MurderGameModeMixin",
+    "PlayerMoodComponentMixin",
+    "PlayerMoodComponentMixin$TaskMixin",
+    "TMMModelGenAccessor"
   ],
   "injectors": {
     "defaultRequire": 1
   },
   "overwrites": {
     "requireAnnotations": true
-	}
+  }
 }

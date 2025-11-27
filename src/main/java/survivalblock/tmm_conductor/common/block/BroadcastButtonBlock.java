@@ -6,6 +6,7 @@ import net.minecraft.block.BlockEntityProvider;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -41,13 +42,18 @@ public class BroadcastButtonBlock extends ElevatorButtonBlock implements BlockEn
                     broadcast.setAnnouncerUuid(null);
                 }
             }
+            world.scheduleBlockTick(pos, this, 1);
             return ActionResult.success(client);
         }
 
-        if (!client) {
+        if (!client && player instanceof ServerPlayerEntity serverPlayer) {
             GameWorldComponent game = GameWorldComponent.KEY.get(world);
-            if (game.isRunning() && player != null && TMMConductorRoles.CONDUCTOR.equals(game.getRole(player))) {
-                BroadcastWorldComponent.KEY.get(world).setBroadcasting(true);
+            if (game.isRunning()) {
+                if (TMMConductorRoles.CONDUCTOR.equals(game.getRole(player))) {
+                    BroadcastWorldComponent.KEY.get(world).setBroadcasting(true);
+                }
+            } else {
+                ConductorVoicechatPlugin.vanillaBroadcast(serverPlayer);
             }
         }
 
