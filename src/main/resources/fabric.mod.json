@@ -1,0 +1,45 @@
+{
+	"schemaVersion": 1,
+	"id": "tmm_conductor",
+	"version": "${version}",
+	"name": "TMM Conductor",
+	"description": "Adds a Conductor role",
+	"authors": [
+		"Survivalblock"
+	],
+	"contact": {
+		"homepage": "https://fabricmc.net/",
+		"sources": "https://github.com/FabricMC/fabric-example-mod"
+	},
+	"license": "MIT",
+	"icon": "assets/tmm_conductor/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+          "survivalblock.tmm_conductor.common.TMMConductor"
+		],
+		"fabric-datagen": [
+          "survivalblock.tmm_conductor.client.datagen.TMMConductorDataGenerator"
+		],
+        "voicechat": [
+          "survivalblock.tmm_conductor.common.ConductorVoicechatPlugin"
+        ],
+        "cardinal-components": [
+          "survivalblock.tmm_conductor.common.init.TMMConductorWorldComponents"
+        ]
+	},
+	"mixins": [
+		"tmm_conductor.mixins.json"
+	],
+	"depends": {
+		"fabricloader": ">=0.18.1",
+		"minecraft": "~1.21.1",
+		"java": ">=21",
+		"fabric-api": "*"
+	},
+    "custom": {
+      "cardinal-components": [
+        "tmm_conductor:broadcast"
+      ]
+    }
+}

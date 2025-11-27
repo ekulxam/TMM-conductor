@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "survivalblock.tmm_conductor.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "mixins": [
+    "ButtonBlockMixin",
+    "ExampleMixin",
+    "GameFunctionsMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+	}
+}
