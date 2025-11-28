@@ -12,6 +12,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.util.Identifier;
 import net.minecraft.world.World;
+import org.jetbrains.annotations.Nullable;
 import survivalblock.tmm_conductor.common.cca.BroadcastWorldComponent;
 import survivalblock.tmm_conductor.common.init.TMMConductorRoles;
 
@@ -27,6 +28,7 @@ import static dev.doctor4t.trainmurdermystery.compat.TrainVoicePlugin.SERVER_API
 public class ConductorVoicechatPlugin implements VoicechatPlugin {
     public static final Identifier ID = TMMConductor.id("voicechat_plugin");
     public static final UUID BROADCAST_UUID = UUID.randomUUID();
+    @Nullable
     public static StaticAudioChannel announcementChannel;
     public static Set<ServerPlayerEntity> receivers = new HashSet<>();
     public static UUID announcerUUID;
@@ -87,7 +89,7 @@ public class ConductorVoicechatPlugin implements VoicechatPlugin {
             return;
         }
 
-        announcementChannel.send(microphonePacket);
+        if (announcementChannel != null) announcementChannel.send(microphonePacket);
     }
 
     public static void vanillaBroadcast(ServerPlayerEntity broadcaster) {
