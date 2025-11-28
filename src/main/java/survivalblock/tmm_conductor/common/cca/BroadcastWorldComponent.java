@@ -86,6 +86,10 @@ public class BroadcastWorldComponent implements ServerTickingComponent, AutoSync
     }
 
     public void setBroadcasting(boolean broadcasting) {
+        if (this.broadcasting == broadcasting) {
+            return;
+        }
+
         if (broadcasting) {
             if (this.isOnCooldown()) {
                 return;

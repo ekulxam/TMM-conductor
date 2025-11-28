@@ -1,2 +1,3 @@
-TMM Conductor 1.0.2+1.21.1
-- Fix Broadcast Button being pressed forever when not in a round
+TMM Conductor 1.0.3+1.21.1
+- Stop broadcast when the conductor dies
+- Prevent other players from fully resetting the broadcast cooldown
